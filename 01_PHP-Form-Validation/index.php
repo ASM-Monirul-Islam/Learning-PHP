@@ -9,21 +9,16 @@
 <body>
 
 	<?php
-	$name = $email = $pass = $confirmPass = $gender = "";
-	$nameErr = $emailErr = $passErr = $finalErr = $confirmPassErr = $genderErr = "";
-
-
+	$name = $email = $gender = $password = $confirmPassword = "";
+	$nameErr = $emailErr = $genderErr = $passwordErr = $confirmPasswordErr = $finalMessage = "";
 	if($_SERVER["REQUEST_METHOD"]=="POST") {
-		$isValid = true;
 		$name = test_input($_POST["name"]);
 		$email = test_input($_POST["email"]);
-		$pass = test_input($_POST["pass"]);
-		$confirmPass = test_input($_POST["confirmPass"]);
-		if(isset($_POST["gender"])) {
-			$gender = test_input($_POST["gender"]);
-		} else {
-			$gender = "";
-		}
+		$password = test_input($_POST["password"]);
+		$confirmPassword = test_input($_POST["confirmPassword"]);
+		$gender = isset($_POST["gender"]) ? test_input($_POST["gender"]) : "";
+
+		$isValid = true;
 
 		// Name validation
 
@@ -31,26 +26,25 @@
 			$nameErr = "Name is required!";
 			$isValid = false;
 		} else if(strlen($name)<3) {
-			$nameErr = "Name should be at least 3 characters!";
+			$nameErr = "Name should contain at least 3 characters!";
 			$isValid = false;
-		}
-		else {
+		} else {
 			$nameErr = "";
 		}
 
-		// email validation
+		// Email Validation
+
 		if(empty($email)) {
 			$emailErr = "Email is required!";
 			$isValid = false;
-		}
-		else if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-			$emailErr ="Invalid email format";
+		} else if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+			$emailErr = "Invalid email format!";
 			$isValid = false;
 		} else {
 			$emailErr = "";
 		}
 
-		// gender validation
+		// Gender Validation
 
 		if(empty($gender)) {
 			$genderErr = "Please select your gender!";
@@ -59,72 +53,75 @@
 			$genderErr = "";
 		}
 
-		// pass validation
+		// Password Validation
 
-		if(empty($pass)) {
-			$passErr = "Password is required!";
+		if(empty($password)) {
+			$passwordErr = "Enter your Password!";
 			$isValid = false;
-		} else if(strlen($pass)<6) {
+		} else if(!preg_match("/[A-Z]/", $password)) {
+			$passwordErr = "Password must contain one upper class character!";
 			$isValid = false;
-			$passErr = "Password should contain at least 6 characters!";
-		} else if(!preg_match("/[A-Z]/", $pass)) {
+		} else if(!preg_match("/[a-z]/", $password)) {
+			$passwordErr = "Password must contain one lower class character!";
 			$isValid = false;
-			$passErr = "Password must contain at least one UpperCase character!";
-		} else if(!preg_match("/[a-z]/", $pass)) {
+		} else if(!preg_match("/[!@#$%^&*]/", $password)) {
+			$passwordErr = "Password must contain one special character!";
 			$isValid = false;
-			$passErr = "Password should contain at least one LowerCase character!";
-		} else if(!preg_match("/[!@#$%^&*]/", $pass)) {
+		} else if(!preg_match("/[0-9]/", $password)) {
+			$passwordErr = "Password must contain one number!";
 			$isValid = false;
-			$passErr = "Password should contain at least one special character!";
-		} else if(!preg_match("/[0-9]/", $pass)) {
-			$isValid = false;
-			$passErr = "Password should contain at least one number!";
 		} else {
-			$passErr = "";
+			$passwordErr = "";
 		}
 
-		// Confirm Pass validation
+		// Confirm Password Validation
 
-		if($confirmPass !== $pass) {
+		if($password !== $confirmPassword) {
+			$confirmPasswordErr = "Passwords do not match!";
 			$isValid = false;
-			$confirmPassErr = "Passwords do not match!";
 		} else {
-			$confirmPassErr = "";
+			$confirmPasswordErr = "";
 		}
 
-		// Final msg
+		// Final Message
 		if($isValid) {
-			$finalErr = "Submitted Successfully!";
-			$finalStatus = "success";
+			$finalMessage = "Submitted Successfully!";
+			$FinalMessageStatus = "success";
 		} else {
-			$finalErr = "Invalid Input!";
-			$finalStatus = "error";
+			$finalMessage = "Please check your inputs!!!";
+			$FinalMessageStatus = "error";
 		}
 
 	}
-	function test_input($data) {
+
+	function test_input($data){
 		return htmlspecialchars(stripslashes(trim($data)));
 	}
-	?>
 
-	<form action="<?php echo htmlspecialchars ($_SERVER["PHP_SELF"])?>" method="post">
-		Name: <input type="text" name="name" class="input">
+
+
+	?>
+	
+
+
+	<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"])?>" method = "post">
+		Name: <input type="text" name="name" class="input" value="<?php echo $name ?>">
 		<span class="error"><?php echo $nameErr ?></span>
-		Email: <input type="email" name="email" class="input">
+		Email: <input type="email" name="email" class="input" value="<?php echo $email ?>">
 		<span class="error"><?php echo $emailErr ?></span>
 		<div class="gender-section">
-			Gender: 
-			<input type="radio" name="gender" class="radio-input" value="Male">Male
-			<input type="radio" name="gender" class="radio-input" value="Female">Female
-			<input type="radio" name="gender" class="radio-input" value="Other">Other
+			Gender:
+			<input type="radio" name="gender" class="gender" value="Male" <?php if($gender == "Male") echo "checked" ?>>Male
+			<input type="radio" name="gender" class="gender" value="Female" <?php if($gender == "Female") echo "checked" ?>>Female
+			<input type="radio" name="gender" class="gender" value="Other" <?php if($gender == "Other") echo "checked" ?>>Other
 		</div>
 		<span class="error"><?php echo $genderErr ?></span>
-		Password: <input type="password" name="pass" class="input">
-		<span class="error"><?php echo $passErr ?></span>
-		Confirm Password: <input type="password" name="confirmPass" class="input">
-		<span class="error"><?php echo $confirmPassErr ?></span>
+		Password: <input type="password" name="password" class="input" value="<?php echo $password ?>">
+		<span class="error"><?php echo $passwordErr ?></span>
+		Confirm Password: <input type="password" name="confirmPassword" class="input" value="<?php echo $confirmPassword ?>">
+		<span class="error"><?php echo $confirmPasswordErr ?></span>
 		<button type="submit">Submit</button>
-		<span class="<?php echo $finalStatus ?>"><?php echo $finalErr ?></span>
+		<span class="<?php echo $FinalMessageStatus ?>"><?php echo $finalMessage ?></span>
 	</form>
 </body>
 </html>
